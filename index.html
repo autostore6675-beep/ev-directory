@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SE Michigan Auto Repair Directory - EverythingVehicle.com</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1a56db;--blue-dark:#1340b0;--gold:#f59e0b;--green:#16a34a;
+  --red:#dc2626;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  --gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937;
+  --radius:10px;--shadow:0 2px 8px rgba(0,0,0,.10);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;color:var(--gray-800);line-height:1.5}
+.dir-header{background:linear-gradient(135deg,#0f2a5c 0%,#1a56db 100%);color:#fff;padding:28px 20px 20px;text-align:center}
+.dir-header h1{font-size:clamp(1.4rem,4vw,2rem);font-weight:800;letter-spacing:-.5px}
+.dir-header p{margin-top:6px;font-size:.95rem;opacity:.85}
+.dir-controls{background:#fff;border-bottom:1px solid var(--gray-200);padding:14px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.ctrl-row{display:flex;flex-wrap:wrap;gap:8px;max-width:1200px;margin:0 auto}
+.ctrl-row input[type=text]{flex:1 1 220px;padding:9px 14px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.9rem;outline:none;transition:border-color .2s}
+.ctrl-row input[type=text]:focus{border-color:var(--blue)}
+.ctrl-row select{padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.9rem;background:#fff;cursor:pointer;outline:none}
+.ctrl-row select:focus{border-color:var(--blue)}
+.ctrl-btn{padding:9px 16px;border-radius:8px;border:1.5px solid var(--gray-200);background:#fff;font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.ctrl-btn.active,.ctrl-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ctrl-btn.green-btn{border-color:var(--green);color:var(--green)}
+.ctrl-btn.green-btn.active,.ctrl-btn.green-btn:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.ctrl-btn.loc-btn{border-color:#7c3aed;color:#7c3aed}
+.ctrl-btn.loc-btn.active,.ctrl-btn.loc-btn:hover{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.result-bar{max-width:1200px;margin:14px auto 0;padding:0 16px;display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--gray-600)}
+.result-bar span b{color:var(--gray-800)}
+.dir-grid{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.shop-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:10px;position:relative;border:2px solid transparent;transition:box-shadow .2s,transform .2s}
+.shop-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.13);transform:translateY(-2px)}
+.shop-card.premium{border-color:var(--gold);background:linear-gradient(135deg,#fffbeb 0%,#fff 60%)}
+.shop-card.closed-card{opacity:.7}
+.badge-row{display:flex;flex-wrap:wrap;gap:5px;min-height:22px}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase}
+.badge-premium{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.badge-top{background:#dbeafe;color:#1e40af}
+.badge-open{background:#dcfce7;color:#166534}
+.badge-closed{background:#fee2e2;color:#991b1b}
+.badge-dist{background:#ede9fe;color:#5b21b6}
+.shop-name{font-size:1.05rem;font-weight:700;color:var(--gray-800);line-height:1.3}
+.stars-row{display:flex;align-items:center;gap:6px;font-size:.88rem}
+.stars{color:var(--gold);letter-spacing:1px}
+.rating-num{font-weight:700;color:var(--gray-800)}
+.review-ct{color:var(--gray-400)}
+.shop-meta{font-size:.83rem;color:var(--gray-600);display:flex;flex-direction:column;gap:4px}
+.shop-meta span{display:flex;gap:6px;align-items:flex-start}
+.shop-meta .icon{flex-shrink:0;margin-top:1px}
+.services-list{font-size:.78rem;color:var(--blue);background:#eff6ff;border-radius:6px;padding:5px 9px;line-height:1.6}
+.desc-text{font-size:.82rem;color:var(--gray-600);font-style:italic}
+.specials-text{font-size:.78rem;color:#92400e;background:#fef3c7;border-radius:6px;padding:5px 9px}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:8px}
+.act-btn{flex:1;min-width:90px;text-align:center;padding:8px 10px;border-radius:8px;font-size:.8rem;font-weight:600;text-decoration:none;transition:opacity .15s;border:none;cursor:pointer}
+.act-btn:hover{opacity:.85}
+.btn-call{background:#16a34a;color:#fff}
+.btn-map{background:#1a56db;color:#fff}
+.btn-web{background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb}
+.pagination{max-width:1200px;margin:12px auto 32px;padding:0 16px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.pg-btn{padding:7px 13px;border-radius:7px;border:1.5px solid var(--gray-200);background:#fff;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .15s;min-width:38px;text-align:center}
+.pg-btn:hover,.pg-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pg-btn:disabled{opacity:.4;cursor:default;background:#fff;color:var(--gray-400)}
+#backTop{position:fixed;bottom:22px;right:22px;background:var(--blue);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.2rem;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.2);transition:opacity .2s;z-index:200}
+#backTop.show{display:flex}
+.no-results{text-align:center;padding:60px 20px;color:var(--gray-400);font-size:1rem;grid-column:1/-1}
+@media(max-width:600px){
+  .ctrl-row{flex-direction:column}
+  .ctrl-row input[type=text],.ctrl-row select{width:100%}
+  .dir-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="dir-header">
+  <h1>SE Michigan Auto Repair Directory</h1>
+  <p>Find trusted auto shops near you &mdash; <span id="totalCount">1,021</span> shops across 56 cities</p>
+</div>
+
+<div class="dir-controls">
+  <div class="ctrl-row">
+    <input type="text" id="searchInput" placeholder="&#128269; Search by shop name..." oninput="applyFilters()">
+    <select id="citySelect" onchange="applyFilters()">
+      <option value="">All Cities</option>
+      <option value="Allen Park">Allen Park</option>
+      <option value="Ann Arbor">Ann Arbor</option>
+      <option value="Auburn Hills">Auburn Hills</option>
+      <option value="Belleville">Belleville</option>
+      <option value="Bloomfield Hills">Bloomfield Hills</option>
+      <option value="Brownstown">Brownstown</option>
+      <option value="Canton">Canton</option>
+      <option value="Center Line">Center Line</option>
+      <option value="Chesterfield">Chesterfield</option>
+      <option value="Dearborn">Dearborn</option>
+      <option value="Dearborn Heights">Dearborn Heights</option>
+      <option value="Detroit">Detroit</option>
+      <option value="Ecorse">Ecorse</option>
+      <option value="Farmington">Farmington</option>
+      <option value="Farmington Hills">Farmington Hills</option>
+      <option value="Flat Rock">Flat Rock</option>
+      <option value="Franklin">Franklin</option>
+      <option value="Fraser">Fraser</option>
+      <option value="Garden City">Garden City</option>
+      <option value="Inkster">Inkster</option>
+      <option value="Keego Harbor">Keego Harbor</option>
+      <option value="Lincoln Park">Lincoln Park</option>
+      <option value="Livonia">Livonia</option>
+      <option value="Macomb">Macomb</option>
+      <option value="Madison Heights">Madison Heights</option>
+      <option value="Milford">Milford</option>
+      <option value="Mount Clemens">Mount Clemens</option>
+      <option value="New Baltimore">New Baltimore</option>
+      <option value="Northville">Northville</option>
+      <option value="Novi">Novi</option>
+      <option value="Plymouth">Plymouth</option>
+      <option value="Redford">Redford</option>
+      <option value="Riverview">Riverview</option>
+      <option value="Rochester Hills">Rochester Hills</option>
+      <option value="Rockwood">Rockwood</option>
+      <option value="Romeo">Romeo</option>
+      <option value="Romulus">Romulus</option>
+      <option value="Roseville">Roseville</option>
+      <option value="Royal Oak">Royal Oak</option>
+      <option value="Southfield">Southfield</option>
+      <option value="Southgate">Southgate</option>
+      <option value="Spring Arbor">Spring Arbor</option>
+      <option value="Sterling Heights">Sterling Heights</option>
+      <option value="Taylor">Taylor</option>
+      <option value="Trenton">Trenton</option>
+      <option value="Troy">Troy</option>
+      <option value="Utica">Utica</option>
+      <option value="Walled Lake">Walled Lake</option>
+      <option value="Warren">Warren</option>
+      <option value="Washington">Washington</option>
+      <option value="Wayne">Wayne</option>
+      <option value="Westland">Westland</option>
+      <option value="Wixom">Wixom</option>
+      <option value="Woodhaven">Woodhaven</option>
+      <option value="Wyandotte">Wyandotte</option>
+      <option value="Ypsilanti">Ypsilanti</option>
+    </select>
+    <select id="ratingSelect" onchange="applyFilters()">
+      <option value="0">Any Rating</option>
+      <option value="4">4.0 &amp; up</option>
+      <option value="4.5">4.5 &amp; up</option>
+      <option value="4.8">4.8 &amp; up</option>
+    </select>
+    <select id="sortSelect" onchange="applyFilters()">
+      <option value="rating">Sort: Top Rated</option>
+      <option value="reviews">Sort: Most Reviewed</option>
+      <option value="az">Sort: A-Z</option>
+      <option value="distance">Sort: Distance</option>
+    </select>
+    <button class="ctrl-btn green-btn" id="openNowBtn" onclick="toggleOpenNow()">&#128994; Open Now</button>
+    <button class="ctrl-btn loc-btn" id="nearMeBtn" onclick="getNearMe()">&#128205; Near Me</button>
+  </div>
+</div>
+
+<div class="result-bar">
+  <span>Showing <b id="showingCount">0</b> of <b id="ofCount">0</b> shops</span>
+  <span id="locationStatus" style="color:#7c3aed;font-weight:600"></span>
+</div>
+
+<div class="dir-grid" id="shopGrid"></div>
+<div class="pagination" id="pagination"></div>
+<button id="backTop" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#9650;</button>
+
+<script>
+var SHOPS = [];
+var DATA_URL = 'https://gist.githubusercontent.com/autostore6675-beep/0c03649408253a44c67ed7d9e281b094/raw/bbc0e2a14969bc8f5846eb7acf40ce23ff7521c8/shops_data.json';
+
+const PER_PAGE = 24;
+let filtered = [];
+let currentPage = 1;
+let userLat = null, userLon = null;
+let openNowActive = false;
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function parseTime12(str) {
+  const m = str.replace(/ /g,' ').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return null;
+  let h = parseInt(m[1]), min = parseInt(m[2]), ampm = m[3].toUpperCase();
+  if (ampm==='PM' && h!==12) h+=12;
+  if (ampm==='AM' && h===12) h=0;
+  return h*60+min;
+}
+
+function isOpenNow(hoursStr) {
+  if (!hoursStr) return false;
+  const now = new Date();
+  const dayName = DAY_NAMES[now.getDay()];
+  const curMin = now.getHours()*60+now.getMinutes();
+  if (hoursStr.includes('|')) {
+    const parts = hoursStr.split('|');
+    for (const part of parts) {
+      const colon = part.indexOf(':');
+      if (colon<0) continue;
+      const day = part.substring(0,colon).trim();
+      if (day.toLowerCase()!==dayName.toLowerCase()) continue;
+      const times = part.substring(colon+1).trim();
+      if (/closed/i.test(times)) return false;
+      const sepIdx = times.search(/–|-/);
+      if (sepIdx<0) return false;
+      const open = parseTime12(times.substring(0,sepIdx).trim());
+      const close = parseTime12(times.substring(sepIdx+1).trim());
+      if (open===null||close===null) return false;
+      return curMin>=open && curMin<close;
+    }
+    return false;
+  }
+  const lines = hoursStr.split(/\n|\r/);
+  const dayAbbr = dayName.substring(0,3);
+  const dayIdx = now.getDay();
+  for (const line of lines) {
+    const colon = line.indexOf(':');
+    if (colon<0) continue;
+    const dayPart = line.substring(0,colon).trim();
+    const timePart = line.substring(colon+1).trim();
+    let matches = false;
+    if (/closed/i.test(timePart)) {
+      if (dayPart.toLowerCase().includes(dayAbbr.toLowerCase())) return false;
+      continue;
+    }
+    const rangeM = dayPart.match(/^(\w{3})-(\w{3})$/i);
+    if (rangeM) {
+      const abbrs = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const start = abbrs.findIndex(a=>a.toLowerCase()===rangeM[1].toLowerCase());
+      const end = abbrs.findIndex(a=>a.toLowerCase()===rangeM[2].toLowerCase());
+      if (start>=0 && end>=0 && dayIdx>=start && dayIdx<=end) matches=true;
+    } else if (dayPart.toLowerCase().includes(dayAbbr.toLowerCase())) {
+      matches=true;
+    }
+    if (matches) {
+      const sep = timePart.search(/-/);
+      if (sep<0) return false;
+      const open = parseTime12(timePart.substring(0,sep).trim());
+      const close = parseTime12(timePart.substring(sep+1).trim());
+      if (open===null||close===null) return false;
+      return curMin>=open && curMin<close;
+    }
+  }
+  return false;
+}
+
+function haversine(lat1,lon1,lat2,lon2) {
+  const R=3958.8;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function starsHtml(r) {
+  const full=Math.floor(r), half=(r-full)>=0.3?1:0, empty=5-full-half;
+  return '&#9733;'.repeat(full)+(half?'&#189;':'')+'&#9734;'.repeat(empty);
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderCard(shop) {
+  const isPremium = /checked|yes|premium|true/i.test(shop['Premium Status']||'');
+  const isTopRated = shop['Google Rating']>=4.7 && shop['Review Count']>=100;
+  const open = isOpenNow(shop['Hours']);
+  const dist = (userLat!==null && shop['Latitude'] && shop['Longitude'])
+    ? haversine(userLat,userLon,shop['Latitude'],shop['Longitude'])
+    : null;
+
+  const badges = [];
+  if (isPremium) badges.push('<span class="badge badge-premium">&#11088; Featured</span>');
+  if (isTopRated) badges.push('<span class="badge badge-top">&#127942; Top Rated</span>');
+  if (shop['Hours']) {
+    badges.push(open
+      ? '<span class="badge badge-open">&#9679; Open Now</span>'
+      : '<span class="badge badge-closed">&#9679; Closed</span>');
+  }
+  if (dist!==null) badges.push('<span class="badge badge-dist">'+dist.toFixed(1)+' mi</span>');
+
+  const ratingHtml = shop['Google Rating']>0
+    ? '<div class="stars-row"><span class="stars">'+starsHtml(shop['Google Rating'])+'</span><span class="rating-num">'+shop['Google Rating'].toFixed(1)+'</span><span class="review-ct">('+shop['Review Count'].toLocaleString()+' reviews)</span></div>'
+    : '<div class="stars-row"><span class="review-ct">No rating yet</span></div>';
+
+  const address = [shop['Address'], shop['City'], shop['State'], shop['Zip Code']].filter(Boolean).join(', ');
+  const mapsUrl = shop['Latitude'] && shop['Longitude']
+    ? 'https://www.google.com/maps/search/?api=1&query='+shop['Latitude']+','+shop['Longitude']
+    : 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(shop['Business Name']+' '+address);
+
+  const servicesHtml = shop['Services']
+    ? '<div class="services-list">'+shop['Services'].split(',').map(function(s){return s.trim();}).join(' &middot; ')+'</div>'
+    : '';
+  const descHtml = shop['Description']
+    ? '<div class="desc-text">&ldquo;'+esc(shop['Description'].substring(0,140))+(shop['Description'].length>140?'...':'')+'&rdquo;</div>'
+    : '';
+  const specialsHtml = shop['Specials']
+    ? '<div class="specials-text">&#127881; '+esc(shop['Specials'])+'</div>'
+    : '';
+
+  const callBtn = shop['Phone']
+    ? '<a class="act-btn btn-call" href="tel:'+shop['Phone'].replace(/\D/g,'')+'">&#128222; Call</a>'
+    : '';
+  const webBtn = shop['Website']
+    ? '<a class="act-btn btn-web" href="'+esc(shop['Website'])+'" target="_blank" rel="noopener">&#127760; Website</a>'
+    : '';
+  const mapBtn = '<a class="act-btn btn-map" href="'+mapsUrl+'" target="_blank" rel="noopener">&#128506; Directions</a>';
+
+  return '<div class="shop-card'+(isPremium?' premium':'')+( (!open&&shop['Hours'])?' closed-card':'' )+'">'
+    +'<div class="badge-row">'+badges.join('')+'</div>'
+    +'<div class="shop-name">'+esc(shop['Business Name'])+'</div>'
+    +ratingHtml
+    +'<div class="shop-meta">'
+    +'<span><span class="icon">&#128205;</span><span>'+esc(address)+'</span></span>'
+    +(shop['Phone']?'<span><span class="icon">&#128222;</span><span>'+esc(shop['Phone'])+'</span></span>':'')
+    +'</div>'
+    +servicesHtml+descHtml+specialsHtml
+    +'<div class="action-row">'+callBtn+mapBtn+webBtn+'</div>'
+    +'</div>';
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const city = document.getElementById('citySelect').value;
+  const minRating = parseFloat(document.getElementById('ratingSelect').value)||0;
+  const sort = document.getElementById('sortSelect').value;
+
+  filtered = SHOPS.filter(function(s) {
+    if (city && s['City']!==city) return false;
+    if (minRating && s['Google Rating']<minRating) return false;
+    if (openNowActive && !isOpenNow(s['Hours'])) return false;
+    if (q && !s['Business Name'].toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (sort==='distance' && userLat!==null) {
+    filtered.sort(function(a,b) {
+      const da = (a['Latitude']&&a['Longitude'])?haversine(userLat,userLon,a['Latitude'],a['Longitude']):9999;
+      const db = (b['Latitude']&&b['Longitude'])?haversine(userLat,userLon,b['Latitude'],b['Longitude']):9999;
+      return da-db;
+    });
+  } else if (sort==='reviews') {
+    filtered.sort(function(a,b){return b['Review Count']-a['Review Count'];});
+  } else if (sort==='az') {
+    filtered.sort(function(a,b){return a['Business Name'].localeCompare(b['Business Name']);});
+  } else {
+    filtered.sort(function(a,b) {
+      const pA = /checked|yes|premium|true/i.test(a['Premium Status']||'')?1:0;
+      const pB = /checked|yes|premium|true/i.test(b['Premium Status']||'')?1:0;
+      if (pB!==pA) return pB-pA;
+      const sA = a['Google Rating']*Math.log(Math.max(a['Review Count'],1)+1);
+      const sB = b['Google Rating']*Math.log(Math.max(b['Review Count'],1)+1);
+      return sB-sA;
+    });
+  }
+
+  currentPage=1;
+  render();
+}
+
+function render() {
+  const grid = document.getElementById('shopGrid');
+  const total = filtered.length;
+  const pages = Math.ceil(total/PER_PAGE)||1;
+  currentPage = Math.min(currentPage, pages);
+  const start = (currentPage-1)*PER_PAGE;
+  const slice = filtered.slice(start, start+PER_PAGE);
+
+  document.getElementById('showingCount').textContent = total>0?(start+1)+'-'+(start+slice.length):'0';
+  document.getElementById('ofCount').textContent = total.toLocaleString();
+  document.getElementById('totalCount').textContent = SHOPS.length.toLocaleString();
+
+  if (slice.length===0) {
+    grid.innerHTML = '<div class="no-results">&#128532; No shops found matching your filters.<br>Try adjusting your search or clearing filters.</div>';
+  } else {
+    grid.innerHTML = slice.map(renderCard).join('');
+  }
+  renderPagination(pages);
+}
+
+function renderPagination(pages) {
+  const pg = document.getElementById('pagination');
+  if (pages<=1) { pg.innerHTML=''; return; }
+  let html='';
+  html+='<button class="pg-btn" '+(currentPage===1?'disabled':'')+' onclick="goPage('+(currentPage-1)+')">&#8249; Prev</button>';
+  const range = pageRange(currentPage, pages);
+  let prev=null;
+  for (const p of range) {
+    if (prev!==null && p-prev>1) html+='<span style="padding:0 4px;color:#9ca3af">...</span>';
+    html+='<button class="pg-btn'+(p===currentPage?' active':'')+'" onclick="goPage('+p+')">'+p+'</button>';
+    prev=p;
+  }
+  html+='<button class="pg-btn" '+(currentPage===pages?'disabled':'')+' onclick="goPage('+(currentPage+1)+')">Next &#8250;</button>';
+  pg.innerHTML=html;
+}
+
+function pageRange(cur, total) {
+  const delta=2, range=[];
+  for (let i=Math.max(1,cur-delta);i<=Math.min(total,cur+delta);i++) range.push(i);
+  if (!range.includes(1)) range.unshift(1);
+  if (!range.includes(total)) range.push(total);
+  return [...new Set(range)].sort(function(a,b){return a-b;});
+}
+
+function goPage(p) { currentPage=p; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function getNearMe() {
+  const btn = document.getElementById('nearMeBtn');
+  const status = document.getElementById('locationStatus');
+  if (userLat!==null) {
+    userLat=null; userLon=null;
+    btn.classList.remove('active');
+    btn.textContent='&#128205; Near Me';
+    status.textContent='';
+    document.getElementById('sortSelect').value='rating';
+    applyFilters();
+    return;
+  }
+  if (!navigator.geolocation) {
+    status.textContent='Geolocation not supported by your browser.';
+    return;
+  }
+  status.textContent='&#128225; Finding your location...';
+  btn.textContent='&#9203; Locating...';
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      userLat=pos.coords.latitude; userLon=pos.coords.longitude;
+      btn.classList.add('active');
+      btn.textContent='&#128205; Near Me &#10003;';
+      status.textContent='Sorted by distance from your location';
+      document.getElementById('sortSelect').value='distance';
+      applyFilters();
+    },
+    function() {
+      btn.textContent='&#128205; Near Me';
+      status.textContent='Could not get location. Please allow location access.';
+    },
+    {timeout:10000}
+  );
+}
+
+function toggleOpenNow() {
+  openNowActive=!openNowActive;
+  document.getElementById('openNowBtn').classList.toggle('active',openNowActive);
+  applyFilters();
+}
+
+window.addEventListener('scroll',function(){
+  document.getElementById('backTop').classList.toggle('show', window.scrollY>400);
+});
+
+(function() {
+  var grid = document.getElementById('shopGrid');
+  grid.innerHTML = '<div style="text-align:center;padding:60px;font-size:1.1rem;color:#4b5563;">&#9889; Loading shops...</div>';
+  fetch(DATA_URL)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      SHOPS = data;
+      filtered = data.slice();
+      document.getElementById('totalCount').textContent = data.length.toLocaleString();
+      applyFilters();
+    })
+    .catch(function(err) {
+      console.error('Directory load failed:', err);
+      grid.innerHTML = '<div style="text-align:center;padding:60px;color:#dc2626;">Could not load directory. Please refresh.<br><small>'+err.message+'</small></div>';
+    });
+})();
+</script>
+</body>
+</html>
